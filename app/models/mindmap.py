@@ -6,27 +6,32 @@ Model = db.Model
 relationship = db.relationship
 
 
-class Map(Model):
+class MindMap(Model):
     __tablename__ = 'maps'
 
-    id = Column(db.String(64), primary_key=True)
+    id = Column(db.String(64), primary_key=True, nullable=False)
 
     def __init__(self, **kwargs):
-        super(User, self).__init__(**kwargs)
+        super(MindMap, self).__init__(**kwargs)
+
+    def save_to_db(self) -> None:
+        db.session.add(self)
+        db.session.commit()
+
+    def delete_from_db(self) -> None:
+        db.session.delete(self)
+        db.session.commit()
 
     def __repr__(self):
-        return f"<Map {self.id}>"
+        return f"<Mind map {self.id}>"
 
 
 class Leaf(Model):
     id = Column(db.Integer, primary_key=True)
-    mapId = Column(db.String(64))
+    mapId = Column(db.String(64), db.ForeignKey('maps.id'), nullable=False)
 
     path = Column(db.String(64))
     text = Column(db.Text)
-
-    children = relationship("Child")
-    parentId = Column(db.Integer, db.ForeignKey('parent.id'))
 
     def __init__(self, **kwargs):
         super(Leaf, self).__init__(**kwargs)

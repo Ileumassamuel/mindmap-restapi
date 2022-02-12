@@ -1,4 +1,5 @@
 from flask_restx import Namespace, Resource, fields
+from app.models.schemas import MindMapSchema
 
 api = Namespace('maps', description='Map related operations')
 
@@ -11,6 +12,8 @@ leaf = api.model('Leaf', {
     'text': fields.String(description="The leaf text"),
 })
 
+mindMapSchema = MindMapSchema()
+
 @api.route('/', strict_slashes=False)
 class MindMapList(Resource):
     @api.doc('List of mind maps')
@@ -19,11 +22,13 @@ class MindMapList(Resource):
         return ["mind map 1"]
 
 
-    @api.doc("Create a map", body=mindMap)
+    @api.expect(mindMap)
+    @api.doc("Create a map")
     def post(self):
         """ Create a mind map """
-        print(api.payload)
-        return 3
+        mindMapData = mindMapSchema.load(api.payload)
+        mindMapData.save_to_db()
+        return mindMapSchema.dump(mindMapData), 201
 
 
 @api.route("/<string:mapId>")

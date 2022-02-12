@@ -4,7 +4,7 @@ from flask_migrate import Migrate
 from app import create_app, db
 
 # Import models
-from app.models.mindmap import Leaf, Map
+from app.models.mindmap import Leaf, MindMap
 
 app = create_app(os.getenv("FLASK_ENV") or "development")
 migrate = Migrate(app, db)

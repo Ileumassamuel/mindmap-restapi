@@ -7,6 +7,8 @@ relationship = db.relationship
 
 
 class Map(Model):
+    __tablename__ = 'maps'
+
     id = Column(db.String(64), primary_key=True)
 
     def __init__(self, **kwargs):

@@ -10,6 +10,11 @@ app = create_app(os.getenv("FLASK_ENV") or "development")
 migrate = Migrate(app, db)
 
 
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
+
 @app.cli.command()
 @click.argument("test_names", nargs=-1)
 def test(test_names):

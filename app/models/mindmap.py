@@ -27,6 +27,8 @@ class MindMap(Model):
 
 
 class Leaf(Model):
+    __tablename__ = 'leaves'
+
     id = Column(db.Integer, primary_key=True)
     mapId = Column(db.String(64), db.ForeignKey('maps.id'), nullable=False)
 

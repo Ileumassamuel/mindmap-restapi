@@ -1,10 +1,11 @@
 from flask_restx import Namespace, Resource, fields
 from app.models.schemas import MindMapSchema
+from app.models.mindmap import MindMap
 
 api = Namespace('maps', description='Map related operations')
 
 mindMap = api.model('Mind Map', {
-    'id': fields.String(required=True, description="The map identifier"),
+    'id': fields.String(required=True, description="The mind map identifier"),
 })
 
 leaf = api.model('Leaf', {
@@ -13,13 +14,14 @@ leaf = api.model('Leaf', {
 })
 
 mindMapSchema = MindMapSchema()
+mindMapListSchema = MindMapSchema(many=True)
 
 @api.route('/', strict_slashes=False)
-class MindMapList(Resource):
+class MindMapListResource(Resource):
     @api.doc('List of mind maps')
     def get(self):
         '''List of mind maps'''
-        return ["mind map 1"]
+        return mindMapListSchema.dump(MindMap.getAll()), 200
 
 
     @api.expect(mindMap)
@@ -27,12 +29,12 @@ class MindMapList(Resource):
     def post(self):
         """ Create a mind map """
         mindMapData = mindMapSchema.load(api.payload)
-        mindMapData.save_to_db()
+        mindMapData.saveToDb()
         return mindMapSchema.dump(mindMapData), 201
 
 
 @api.route("/<string:mapId>")
-class MindMap(Resource):
+class MindMapResource(Resource):
     @api.doc("Get a specific map")
     @api.marshal_with(mindMap)
     def get(self, mapId):
@@ -41,7 +43,7 @@ class MindMap(Resource):
 
 
 @api.route("/<string:mapId>/leaves")
-class LeafList(Resource):
+class LeafListResource(Resource):
     @api.doc("Get a specific map")
     @api.marshal_with(mindMap)
     def get(self, mapId):
@@ -50,7 +52,7 @@ class LeafList(Resource):
 
 
 @api.route("/<string:mapId>/leaves/<string:leafId>")
-class Leaf(Resource):
+class LeafResource(Resource):
     @api.doc(
         "Get a specific leaf", 
         responses={

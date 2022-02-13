@@ -1,3 +1,4 @@
+from typing import List
 from app import db
 
 # Aliases
@@ -14,13 +15,21 @@ class MindMap(Model):
     def __init__(self, **kwargs):
         super(MindMap, self).__init__(**kwargs)
 
-    def save_to_db(self) -> None:
+    def saveToDb(self) -> None:
         db.session.add(self)
         db.session.commit()
 
-    def delete_from_db(self) -> None:
+    def deleteFromDb(self) -> None:
         db.session.delete(self)
         db.session.commit()
+
+    @classmethod
+    def findById(cls, _id) -> "MindMap":
+        return cls.query.filter_by(id=_id).first()
+
+    @classmethod
+    def getAll(cls) -> List["MindMap"]:
+        return cls.query.all()
 
     def __repr__(self):
         return f"<Mind map {self.id}>"

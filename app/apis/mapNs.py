@@ -1,6 +1,9 @@
-from flask_restx import Namespace, Resource, fields
-from app.models.schemas import MindMapSchema
-from app.models.mindmap import MindMap
+from flask_restx import Namespace, Resource, fields, reqparse
+from app.models.schemas import MindMapSchema, LeafSchema
+from app.models.mindmap import MindMap, Leaf
+
+parser = reqparse.RequestParser()
+parser.add_argument('path', type=str, help="Leaf must exist")
 
 api = Namespace('maps', description='Map related operations')
 
@@ -16,6 +19,9 @@ leaf = api.model('Leaf', {
 mindMapSchema = MindMapSchema()
 mindMapListSchema = MindMapSchema(many=True)
 
+leafSchema = LeafSchema()
+leafListSchema = LeafSchema(many=True)
+
 @api.route('/', strict_slashes=False)
 class MindMapListResource(Resource):
     @api.doc('List of mind maps')
@@ -26,7 +32,7 @@ class MindMapListResource(Resource):
 
     @api.expect(mindMap)
     @api.doc("Create a map")
-    def post(self):
+    def put(self):
         """ Create a mind map """
         mindMapData = mindMapSchema.load(api.payload)
         mindMapData.saveToDb()
@@ -36,35 +42,71 @@ class MindMapListResource(Resource):
 @api.route("/<string:mapId>")
 class MindMapResource(Resource):
     @api.doc("Get a specific map")
-    @api.marshal_with(mindMap)
     def get(self, mapId):
         """ Get a specific mind map's metadata """
-        return { "id": "vladdy" }
+        foundMindMap = MindMap.findById(mapId)
+
+        if foundMindMap != None:
+            return mindMapSchema.dump(foundMindMap), 200
+        else:
+            return { "message": "Map not found" }, 404
 
 
 @api.route("/<string:mapId>/leaves")
 class LeafListResource(Resource):
+    @api.expect(parser)
+    # @api.marshal_list_with(leaf)
     @api.doc("Get a specific map")
-    @api.marshal_with(mindMap)
     def get(self, mapId):
         """ Get a specific mind map's leaves """
-        return { "id": "vladdy" }
+        foundMindMap = MindMap.findById(mapId)
+        args = parser.parse_args()
+        path = args["path"]
+
+        if foundMindMap != None:
+            if path != None:
+                foundLeaf = Leaf.findByMapAndPath(mapId, path)
+
+                if foundLeaf != None:
+                    return leafSchema.dump(foundLeaf), 200
+                else:
+                    return { "message": "Leaf not found" }, 404
+            else:
+                return leafListSchema.dump(Leaf.getAll()), 200
+        else:
+            return { "message": "Map not found" }, 404
 
 
-@api.route("/<string:mapId>/leaves/<string:leafId>")
-class LeafResource(Resource):
-    @api.doc(
-        "Get a specific leaf", 
-        responses={
-            200: ("Leaf fetched", leaf)
-        }
-    )
-    @api.marshal_with(leaf)
-    def get(self, mapId, leafId):
-        """ Get a specific mind map's leaf """
-        return { "path": leafId, "text": "Welcome" }
+    @api.expect(leaf)
+    # @api.marshal_with(leaf)
+    @api.doc("Create a specific leaf")
+    def put(self, mapId):
+        """ Create/Update a leaf on a map """
+        foundMindMap = MindMap.findById(mapId)
 
-    @api.marshal_with(leaf)
-    def put(self, mapId, leafId):
-        """ Modify a specific mind map's leaf """
-        return { "path": leafId, "text": "Welcome" }
+        if foundMindMap != None:
+            path = api.payload["path"]
+            normalizedPath = path.strip('/')
+            subPaths = normalizedPath.split('/')
+
+            currentPath = subPaths[0]
+
+            if Leaf.findByMapAndPath(mapId, currentPath) == None:
+                rootNode = Leaf(mapId=mapId, path=currentPath, subPath=currentPath, parent=None)
+                currentParent = rootNode
+                subPaths.pop(0)
+
+                for subPath in subPaths:
+                    currentPath = (currentPath + "/" + subPath)
+                    existingLeaf = Leaf.findByMapAndPath(mapId, currentPath)
+
+                    if existingLeaf == None:
+                        newLeaf = Leaf(mapId=mapId, path=currentPath, subPath=subPath, parent=currentParent)
+                        currentParent = newLeaf
+                    else:
+                        currentParent = existingLeaf
+
+                rootNode.saveToDb()
+                return leafSchema.dump(rootNode), 201
+        else:
+            return { "message": "Map not found" }, 404

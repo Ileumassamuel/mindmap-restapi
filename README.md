@@ -2,21 +2,12 @@
 
 A [mind map](https://en.wikipedia.org/wiki/Mind_map) web service.
 
-## Deployment
-
-1. Get Python 3 (Tested with Python 3.10.2)
-2. (Optional) Set the `FLASK_ENV` environment variable
-3. Run the `./bin/run.sh` script from the root directory
-```bash
-./bin/run.sh
-```
-
 ## Specifications
 
 ### Create a mind map
 
 ```bash
-curl -X PUT localhost:3000/api/v1/maps -H 'content-type: application/json' -d '{"id": "my-map"}'
+$ curl -X PUT localhost:3000/api/v1/maps -H 'content-type: application/json' -d '{"id": "my-map"}'
 ```
 
 ### Add a leaf (path) to the map
@@ -54,4 +45,21 @@ root/
             potatoes
         eat/
             tomatoes
+```
+
+## Running
+
+1. Get Python 3 (Tested with Python 3.10.2)
+2. (Optional) Set the `FLASK_ENV` environment variable
+3. Run the `./bin/run.sh` script from the root directory
+```bash
+$ ./bin/run.sh
+```
+
+## Testing
+
+Make sure you have the `FLASK_APP=index.py` environment variable set.
+
+```bash
+$ flask test
 ```

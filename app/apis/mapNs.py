@@ -87,7 +87,7 @@ class LeafListResource(Resource):
 
         cuLeaf = Leaf.createOrUpdateLeaf(mapId, path, text)
 
-        if createdLeaf != None:
+        if cuLeaf != None:
             return leafSchema.dump(cuLeaf), 200
         else:
             return { "message": "Map not found" }, 404

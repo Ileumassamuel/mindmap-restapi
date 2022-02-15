@@ -89,8 +89,8 @@ class Leaf(Model):
         if foundMindMap != None:
             deepestLeaf = Leaf.findDeepestLeaf(_mapId, _path)
 
-            currentPath = deepestLeaf.path or ""
-            pathDiff = _path.removePrefix(currentPath).strip('/')
+            currentPath = deepestLeaf.path if deepestLeaf != None else ""
+            pathDiff = _path.removeprefix(currentPath).strip('/')
             subPaths = pathDiff.split('/')
 
             rootLeaf = deepestLeaf
@@ -115,6 +115,16 @@ class Leaf(Model):
 
     @staticmethod
     def findDeepestLeaf(_mapId, _path) -> "Leaf":
+        """Find the deepest existing leaf in a map given a path
+
+        Args:
+            _mapId (str): The identifier of the given map
+            _path (str): The path on the given map
+
+        Returns:
+            The deepest existing leaf of the given path or None if there are no
+            leaves on the path.
+        """
         normalizedPath = _path.strip('/')
         previousLeaf = None
 

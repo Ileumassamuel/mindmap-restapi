@@ -6,40 +6,22 @@ Your service must provide REST API endpoints to create a mind map and store its 
 
 Your solution must be written in **Python**.
 
-## Requirements
+## Deployment
 
 The provided `./bin/run.sh` script must be enough to build and / or start the REST API.
-
-Please give us your final version in a Git repository (github, gitlab, ...).
-
-We expect that you provide at least:
-
-* Unit tests (min coverage: 30%).
-* Persistence: data can be saved in file(s).
-
-If you need support, feel free to contact us.
-
-## Review
-
-These are some of the things my colleagues will be looking at when reviewing your test:
-
-* The API should conform to the specifications (correct endpoints and it should work).
-* Focus on code quality before starting bonus requirements.
-* Don’t reinvent the wheel, use best practices, use the right tool for the job.
-* Your REST API has to start easily without errors (you can provide us a README file to explain how to start it).
 
 ## Specifications
 
 ### Create a mind map
 
 ```bash
-curl -X [verb] [something] -H 'content-type: application/json' -d '{"id": "my-map"}'
+curl -X PUT localhost:3000/api/v1/maps -H 'content-type: application/json' -d '{"id": "my-map"}'
 ```
 
 ### Add a leaf (path) to the map
 
 ```bash
-$ curl -X [verb] [something] \
+$ curl -X PUT localhost:3000/api/v1/maps/[mapId]/leaves \
   -H 'content-type: application/json' \
   -d '{
     "path": "i/like/potatoes",
@@ -50,9 +32,9 @@ $ curl -X [verb] [something] \
 ### Read a leaf (path) of the map
 
 ```bash
-$ curl -X [verb] [something] -H 'content-type: application/json'
+$ curl -X GET localhost:3000/api/v1/maps/[mapId]/leaves?path=[path] -H 'content-type: application/json'
 
-Expected response:
+Sample response:
 {
     "path": "i/like/potatoes",
     "text": "Because reasons"
@@ -62,9 +44,9 @@ Expected response:
 ### Pretty print the whole tree of the mind map
 
 ```bash
-$ curl -X [verb] [something] 
+$ curl -X GET localhost:3000/api/v1/tree/[mapId]
 
-Expected output:
+Sample output:
 root/
     i/
         like/
@@ -72,15 +54,3 @@ root/
         eat/
             tomatoes
 ```
-
-## BONUS Requirements
-
-If you have time, feel free to add improvements.
-
-Here are some ideas:
-
-* Unit tests coverage to 75%.
-* If not already done, a nice storage backend (SQL Database, ...).
-* Docker image.
-* Pipeline to build the docker image, execute the unit tests (example, github + travis CI).
-* Deployment in a Cloud service (Heroku, GCP AppEngine...)

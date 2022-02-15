@@ -25,7 +25,7 @@ def test(test_names):
     if test_names:
         """ Run specific unit tests.
         Example:
-        $ flask test tests.test_auth_api tests.test_user_model ...
+        $ flask test tests.testLeafApi.py ...
         """
         tests = unittest.TestLoader().loadTestsFromNames(test_names)
 

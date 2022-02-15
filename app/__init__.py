@@ -4,6 +4,7 @@ This module:
 - Registers extensions
 """
 
+import os
 from flask import Flask
 
 # Import extensions
@@ -13,8 +14,10 @@ from .extensions import db, marshmellow
 from config import envToConfig
 
 
-def create_app(env) -> Flask:
+def create_app(env="development") -> Flask:
     app = Flask(__name__)
+
+    env = os.getenv("FLASK_ENV") or env
     app.config.from_object(envToConfig[env])
 
     register_extensions(app)

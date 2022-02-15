@@ -4,7 +4,7 @@ A [mind map](https://en.wikipedia.org/wiki/Mind_map) web service.
 
 ## Deployment
 
-1. Get Python 3
+1. Get Python 3 (Tested with Python 3.10.2)
 2. (Optional) Set the `FLASK_ENV` environment variable
 3. Run the `./bin/run.sh` script from the root directory
 ```bash

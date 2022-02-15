@@ -12,4 +12,4 @@ ENV FLASK_ENV=production
 RUN pip install waitress
 
 EXPOSE 3000
-ENTRYPOINT [ "waitress-serve", "--call", "0.0.0.0:3000", "index:app" ]
+ENTRYPOINT [ "waitress-serve", "--port", "3000", "--call", "app:create_app" ]

@@ -40,7 +40,7 @@ class MindMap(Model):
 class Leaf(Model):
     __tablename__ = 'leaves'
 
-    id = Column(db.Integer(), primary_key=True)
+    id = Column(db.Integer(), primary_key=True, nullable=False)
     mapId = Column(db.String(64), db.ForeignKey('maps.id'), nullable=False)
 
     path = Column(db.String(64), nullable=False)
@@ -102,16 +102,18 @@ class Leaf(Model):
                 currentParent = rootLeaf
 
             for subPath in subPaths:
-                currentPath = (currentPath + "/" + subPath)
-                newLeaf = Leaf(mapId=_mapId, path=currentPath, subPath=subPath, parent=currentParent)
-                currentParent = newLeaf
+                if subPath != "":
+                    currentPath = (currentPath + "/" + subPath)
+                    newLeaf = Leaf(mapId=_mapId, path=currentPath, subPath=subPath, parent=currentParent)
+                    currentParent = newLeaf
 
             currentParent.text = _text
 
             if deepestLeaf == None:
                 rootLeaf.saveToDb()
             else:
-                db.session.merge(currentParent)
+                db.session.merge(rootLeaf)
+                db.session.commit()
 
             return currentParent
 
@@ -130,22 +132,19 @@ class Leaf(Model):
             leaves on the path.
         """
         normalizedPath = _path.strip('/')
-        previousLeaf = None
+        subPaths = normalizedPath.split('/')
+        rootPath = subPaths.pop(0)
+        previousLeaf = Leaf.findByMapAndPath(_mapId, rootPath)
 
-        for leadingPath in generateLeadingPaths(normalizedPath):
-            currentLeaf = Leaf.findByMapAndPath(_mapId, leadingPath)
+        for subPath in subPaths:
+            currentLeaf = previousLeaf.children.get(subPath, None) if previousLeaf != None else None
 
-            # The root leaf does not exist
-            if previousLeaf == None and currentLeaf == None:
-                return None
-            # There is a deepest leaf
-            elif previousLeaf != None and currentLeaf == None:
-                return previousLeaf
-            # The deepest leaf is the last in the path
-            elif currentLeaf.path == normalizedPath:
-                return currentLeaf
+            if currentLeaf == None:
+                break
 
             previousLeaf = currentLeaf
+
+        return previousLeaf
 
     @classmethod
     def findById(cls, _id) -> "Leaf":

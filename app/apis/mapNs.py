@@ -61,9 +61,10 @@ class LeafListResource(Resource):
     def get(self, mapId):
         """ Get a specific mind map's leaves """
         foundMindMap = MindMap.findById(mapId)
-        path = request.args.get("path")
 
         if foundMindMap != None:
+            path = request.args.get("path")
+
             if path != None:
                 foundLeaf = Leaf.findByMapAndPath(mapId, path)
 

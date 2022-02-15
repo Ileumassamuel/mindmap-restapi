@@ -1,35 +1,46 @@
+from flask import Response
 from flask_restx import Namespace, Resource, fields
-from app.models.mindmap import Leaf
+from app.models.mindmap import Leaf, MindMap
 
 ns = Namespace('tree', description='Tree related operations')
 
 @ns.route("/<string:mapId>")
 class Tree(Resource):
-    @ns.produces(["text/plain"])
+    @ns.produces(["text/plain", "application/json"])
     @ns.doc("Get a map's tree")
     def get(self, mapId):
         """ Get a specific mind map's tree """
-        leaves = Leaf.filterRootNodesByMap(mapId)
-        tree = """root/
-        some
+        foundMindMap = MindMap.findById(mapId)
 
-        cool
+        if foundMindMap != None:
+            leaves = Leaf.filterRootNodesByMap(mapId)
+            tree = "root/"
 
-        stuff
+            level = 0
 
-        """
-        response.headers.set("Content-Type", "text/plain")
+            for leaf in leaves:
+                tree += "\n" + getLeafTree(leaf, 1)
 
-        level = 0
+            return Response(tree, mimetype='text/plain')
+        else:
+            return { "message": "Map not found" }, 404
 
-        # for leaf in leaves:
-        #     tree += "\n" + getChildrenTree(leaf)
 
-        return tree
-
-def getChildrenTree(leaf: Leaf) -> str:
+def getLeafTree(leaf: Leaf, level: int) -> str:
+    mapId = leaf.mapId
     children = leaf.children
 
-    subTree = leaf.subPath
+    indenting = 2 * "\t" * level
+    tree = indenting + leaf.subPath
 
-    return subTree
+    if len(children) != 0:
+        rootPath = leaf.path
+        tree += "/"
+
+        for childSubPath in children:
+            childPath = f"{rootPath}/{childSubPath}"
+            child = Leaf.findByMapAndPath(mapId, childPath)
+
+            tree += "\n" + getLeafTree(child, level + 1)
+
+    return tree

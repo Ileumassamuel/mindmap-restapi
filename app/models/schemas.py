@@ -1,6 +1,7 @@
 from app import marshmellow
 
-from .mindmap import Leaf, MindMap
+from .mindmap import MindMap
+from .leaf import Leaf
 
 
 class MindMapSchema(marshmellow.SQLAlchemySchema):

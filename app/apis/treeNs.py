@@ -1,6 +1,7 @@
 from flask import Response
 from flask_restx import Namespace, Resource, fields
-from app.models.mindmap import Leaf, MindMap
+from app.models.mindmap import MindMap
+from app.models.leaf import Leaf
 
 ns = Namespace('tree', description='Tree related operations')
 
@@ -27,6 +28,15 @@ class Tree(Resource):
 
 
 def getLeafTree(leaf: Leaf, level: int) -> str:
+    """Recursively produces a subtree given a leaf
+
+    Args:
+        leaf (Leaf): The root leaf
+        level (int): Initial indenting
+
+    Returns:
+        A pretty-printed subtree
+    """
     mapId = leaf.mapId
     children = leaf.children
 

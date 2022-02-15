@@ -1,7 +1,8 @@
 from flask import request
 from flask_restx import Namespace, Resource, fields
 from app.models.schemas import MindMapSchema, LeafSchema
-from app.models.mindmap import MindMap, Leaf
+from app.models.mindmap import MindMap
+from app.models.leaf import Leaf
 
 ns = Namespace('maps', description='Map related operations')
 

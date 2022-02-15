@@ -1,14 +1,15 @@
 # Mind Map API
 
-We want you to design a [mind map](https://en.wikipedia.org/wiki/Mind_map) web service.
-
-Your service must provide REST API endpoints to create a mind map and store its data in a backend.
-
-Your solution must be written in **Python**.
+A [mind map](https://en.wikipedia.org/wiki/Mind_map) web service.
 
 ## Deployment
 
-The provided `./bin/run.sh` script must be enough to build and / or start the REST API.
+1. Get Python 3
+2. (Optional) Set the `FLASK_ENV` environment variable
+3. Run the `./bin/run.sh` script from the root directory
+```bash
+./bin/run.sh
+```
 
 ## Specifications
 

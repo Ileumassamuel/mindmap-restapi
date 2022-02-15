@@ -35,7 +35,7 @@ class MindMapListResource(Resource):
         """ Create a mind map """
         mindMapData = mindMapSchema.load(ns.payload)
         mindMapData.saveToDb()
-        return mindMapSchema.dump(mindMapData), 201
+        return mindMapSchema.dump(mindMapData), 200
 
 
 @ns.route("/<string:mapId>")

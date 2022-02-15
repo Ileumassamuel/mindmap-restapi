@@ -97,8 +97,8 @@ class Leaf(Model):
             currentParent = rootLeaf
 
             if deepestLeaf == None:
-                rootPath = subPaths.pop(0)
-                rootLeaf = Leaf(mapId=_mapId, path=currentPath, subPath=rootPath, parent=None)
+                currentPath = subPaths.pop(0)
+                rootLeaf = Leaf(mapId=_mapId, path=currentPath, subPath=currentPath, parent=None)
                 currentParent = rootLeaf
 
             for subPath in subPaths:
@@ -108,7 +108,11 @@ class Leaf(Model):
 
             currentParent.text = _text
 
-            rootLeaf.saveToDb()
+            if deepestLeaf == None:
+                rootLeaf.saveToDb()
+            else:
+                db.session.commit()
+
             return currentParent
 
         return None
@@ -138,7 +142,7 @@ class Leaf(Model):
             elif previousLeaf != None and currentLeaf == None:
                 return previousLeaf
             # The deepest leaf is the last in the path
-            elif currentLeaf == normalizedPath:
+            elif currentLeaf.path == normalizedPath:
                 return currentLeaf
 
             previousLeaf = currentLeaf

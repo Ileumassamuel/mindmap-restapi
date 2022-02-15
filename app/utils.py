@@ -12,6 +12,8 @@ def generateLeadingPaths(path):
     currentPath = subPaths[0]
     subPaths.pop(0)
 
+    yield currentPath
+
     for subPath in subPaths:
         currentPath = (currentPath + "/" + subPath)
         yield currentPath

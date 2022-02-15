@@ -111,7 +111,7 @@ class Leaf(Model):
             if deepestLeaf == None:
                 rootLeaf.saveToDb()
             else:
-                db.session.commit()
+                db.session.merge(currentParent)
 
             return currentParent
 

@@ -82,31 +82,12 @@ class LeafListResource(Resource):
     @api.doc("Create a specific leaf")
     def put(self, mapId):
         """ Create/Update a leaf on a map """
-        foundMindMap = MindMap.findById(mapId)
+        path = api.payload["path"]
+        text = api.payload["text"]
 
-        if foundMindMap != None:
-            path = api.payload["path"]
-            normalizedPath = path.strip('/')
-            subPaths = normalizedPath.split('/')
+        cuLeaf = Leaf.createOrUpdateLeaf(mapId, path, text)
 
-            currentPath = subPaths[0]
-
-            if Leaf.findByMapAndPath(mapId, currentPath) == None:
-                rootNode = Leaf(mapId=mapId, path=currentPath, subPath=currentPath, parent=None)
-                currentParent = rootNode
-                subPaths.pop(0)
-
-                for subPath in subPaths:
-                    currentPath = (currentPath + "/" + subPath)
-                    existingLeaf = Leaf.findByMapAndPath(mapId, currentPath)
-
-                    if existingLeaf == None:
-                        newLeaf = Leaf(mapId=mapId, path=currentPath, subPath=subPath, parent=currentParent)
-                        currentParent = newLeaf
-                    else:
-                        currentParent = existingLeaf
-
-                rootNode.saveToDb()
-                return leafSchema.dump(rootNode), 201
+        if createdLeaf != None:
+            return leafSchema.dump(cuLeaf), 200
         else:
             return { "message": "Map not found" }, 404

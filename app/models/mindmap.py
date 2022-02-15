@@ -1,6 +1,7 @@
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from typing import List
 from app import db
+from app.utils import generateLeadingPaths
 
 # Aliases
 Column = db.Column
@@ -57,10 +58,7 @@ class Leaf(Model):
         )
 
     mindmap = db.relationship("MindMap", backref="leaves")
-
-    # __table_args__ = (db.UniqueConstraint('mapId', 'path'),)
     uniqueConstraint = db.UniqueConstraint('mapId', 'path')
-
 
     def __init__(self, **kwargs):
         super(Leaf, self).__init__(**kwargs)
@@ -73,17 +71,79 @@ class Leaf(Model):
         db.session.delete(self)
         db.session.commit()
 
+    @staticmethod
+    def createOrUpdateLeaf(_mapId, _path, _text):
+        """Creates a leaf on a given map
+
+        Args:
+            _mapId (str): The map's identifier
+            _path (str): The leaf's path
+            _text (str): The leaf's text
+
+        Returns:
+            - The created/Updated leaf if the map exists
+            - None otherwise.
+        """
+        foundMindMap = MindMap.findById(_mapId)
+
+        if foundMindMap != None:
+            deepestLeaf = Leaf.findDeepestLeaf(_mapId, _path)
+
+            currentPath = deepestLeaf.path or ""
+            pathDiff = _path.removePrefix(currentPath).strip('/')
+            subPaths = pathDiff.split('/')
+
+            rootLeaf = deepestLeaf
+            currentParent = rootLeaf
+
+            if deepestLeaf == None:
+                rootPath = subPaths.pop(0)
+                rootLeaf = Leaf(mapId=_mapId, path=currentPath, subPath=rootPath, parent=None)
+                currentParent = rootLeaf
+
+            for subPath in subPaths:
+                currentPath = (currentPath + "/" + subPath)
+                newLeaf = Leaf(mapId=_mapId, path=currentPath, subPath=subPath, parent=currentParent)
+                currentParent = newLeaf
+
+            currentParent.text = _text
+
+            rootLeaf.saveToDb()
+            return currentParent
+
+        return None
+
+    @staticmethod
+    def findDeepestLeaf(_mapId, _path) -> "Leaf":
+        normalizedPath = _path.strip('/')
+        previousLeaf = None
+
+        for leadingPath in generateLeadingPaths(normalizedPath):
+            currentLeaf = Leaf.findByMapAndPath(_mapId, leadingPath)
+
+            # The root leaf does not exist
+            if previousLeaf == None and currentLeaf == None:
+                return None
+            # There is a deepest leaf
+            elif previousLeaf != None and currentLeaf == None:
+                return previousLeaf
+            # The deepest leaf is the last in the path
+            elif currentLeaf == normalizedPath:
+                return currentLeaf
+
+            previousLeaf = currentLeaf
+
     @classmethod
     def findById(cls, _id) -> "Leaf":
         return cls.query.filter_by(id=_id).first()
 
     @classmethod
-    def findByMapAndPath(cls, mapId, path) -> "ItemModel":
-        return cls.query.filter_by(mapId=mapId, path=path).first()
+    def findByMapAndPath(cls, _mapId, _path) -> "ItemModel":
+        return cls.query.filter_by(mapId=_mapId, path=_path).first()
 
     @classmethod
-    def filterByMap(cls, mapId) -> List["ItemModel"]:
-        return cls.query.filter_by(mapId=mapId).all()
+    def filterByMap(cls, _mapId) -> List["ItemModel"]:
+        return cls.query.filter_by(mapId=_mapId).all()
 
     @classmethod
     def getAll(cls) -> List["Leaf"]:

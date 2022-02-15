@@ -5,7 +5,7 @@ if [ -f "venv/bin/activate" ]
 then
     echo virtual env already created
 else
-    virtualenv venv
+    python -m venv venv
 fi
 
 source venv/bin/activate

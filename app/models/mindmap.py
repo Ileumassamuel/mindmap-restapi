@@ -101,10 +101,10 @@ class Leaf(Model):
                 rootLeaf = Leaf(mapId=_mapId, path=currentPath, subPath=currentPath, parent=None)
                 currentParent = rootLeaf
 
-            for subPath in subPaths:
-                if subPath != "":
-                    currentPath = (currentPath + "/" + subPath)
-                    newLeaf = Leaf(mapId=_mapId, path=currentPath, subPath=subPath, parent=currentParent)
+            for _subPath in subPaths:
+                if _subPath != "":
+                    currentPath = (currentPath + "/" + _subPath)
+                    newLeaf = Leaf(mapId=_mapId, path=currentPath, subPath=_subPath, parent=currentParent)
                     currentParent = newLeaf
 
             currentParent.text = _text
@@ -136,8 +136,8 @@ class Leaf(Model):
         rootPath = subPaths.pop(0)
         previousLeaf = Leaf.findByMapAndPath(_mapId, rootPath)
 
-        for subPath in subPaths:
-            currentLeaf = previousLeaf.children.get(subPath, None) if previousLeaf != None else None
+        for _subPath in subPaths:
+            currentLeaf = previousLeaf.children.get(_subPath, None) if previousLeaf != None else None
 
             if currentLeaf == None:
                 break
@@ -151,12 +151,16 @@ class Leaf(Model):
         return cls.query.filter_by(id=_id).first()
 
     @classmethod
-    def findByMapAndPath(cls, _mapId, _path) -> "ItemModel":
+    def findByMapAndPath(cls, _mapId, _path) -> "Leaf":
         return cls.query.filter_by(mapId=_mapId, path=_path).first()
 
     @classmethod
-    def filterByMap(cls, _mapId) -> List["ItemModel"]:
+    def filterByMap(cls, _mapId) -> List["Leaf"]:
         return cls.query.filter_by(mapId=_mapId).all()
+
+    @classmethod
+    def filterRootNodesByMap(cls, _mapId) -> List["Leaf"]:
+        return cls.query.filter(Leaf.path == Leaf.subPath, Leaf.mapId == _mapId).all()
 
     @classmethod
     def getAll(cls) -> List["Leaf"]:

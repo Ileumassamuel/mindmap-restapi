@@ -9,5 +9,6 @@ services:
             - 3000:3000
         environment:
             - FLASK_ENV=development
+            - FLASK_APP=index.py
         volumes:
           - .:/app

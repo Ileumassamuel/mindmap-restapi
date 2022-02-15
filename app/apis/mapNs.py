@@ -1,17 +1,15 @@
-from flask_restx import Namespace, Resource, fields, reqparse
+from flask import request
+from flask_restx import Namespace, Resource, fields
 from app.models.schemas import MindMapSchema, LeafSchema
 from app.models.mindmap import MindMap, Leaf
 
-parser = reqparse.RequestParser()
-parser.add_argument('path', type=str, help="Leaf must exist")
+ns = Namespace('maps', description='Map related operations')
 
-api = Namespace('maps', description='Map related operations')
-
-mindMap = api.model('Mind Map', {
+mindMap = ns.model('Mind Map', {
     'id': fields.String(required=True, description="The mind map identifier"),
 })
 
-leaf = api.model('Leaf', {
+leaf = ns.model('Leaf', {
     'path': fields.String(description="The leaf path"),
     'text': fields.String(description="The leaf text"),
 })
@@ -22,26 +20,26 @@ mindMapListSchema = MindMapSchema(many=True)
 leafSchema = LeafSchema()
 leafListSchema = LeafSchema(many=True)
 
-@api.route('/', strict_slashes=False)
+@ns.route('/', strict_slashes=False)
 class MindMapListResource(Resource):
-    @api.doc('List of mind maps')
+    @ns.doc('List of mind maps')
     def get(self):
         '''List of mind maps'''
         return mindMapListSchema.dump(MindMap.getAll()), 200
 
 
-    @api.expect(mindMap)
-    @api.doc("Create a map")
+    @ns.expect(mindMap)
+    @ns.doc("Create a map")
     def put(self):
         """ Create a mind map """
-        mindMapData = mindMapSchema.load(api.payload)
+        mindMapData = mindMapSchema.load(ns.payload)
         mindMapData.saveToDb()
         return mindMapSchema.dump(mindMapData), 201
 
 
-@api.route("/<string:mapId>")
+@ns.route("/<string:mapId>")
 class MindMapResource(Resource):
-    @api.doc("Get a specific map")
+    @ns.doc("Get a specific map")
     def get(self, mapId):
         """ Get a specific mind map's metadata """
         foundMindMap = MindMap.findById(mapId)
@@ -52,16 +50,18 @@ class MindMapResource(Resource):
             return { "message": "Map not found" }, 404
 
 
-@api.route("/<string:mapId>/leaves")
+@ns.route("/<string:mapId>/leaves")
 class LeafListResource(Resource):
-    @api.expect(parser)
-    # @api.marshal_list_with(leaf)
-    @api.doc("Get a specific map")
+    @ns.doc(
+        "Get a specific map",
+        params={
+            "path": { 'description': 'Leaf must exist' }
+        }
+    )
     def get(self, mapId):
         """ Get a specific mind map's leaves """
         foundMindMap = MindMap.findById(mapId)
-        args = parser.parse_args()
-        path = args["path"]
+        path = request.args.get("path")
 
         if foundMindMap != None:
             if path != None:
@@ -77,13 +77,12 @@ class LeafListResource(Resource):
             return { "message": "Map not found" }, 404
 
 
-    @api.expect(leaf)
-    # @api.marshal_with(leaf)
-    @api.doc("Create a specific leaf")
+    @ns.expect(leaf)
+    @ns.doc("Create a specific leaf")
     def put(self, mapId):
         """ Create/Update a leaf on a map """
-        path = api.payload["path"]
-        text = api.payload["text"]
+        path = ns.payload["path"]
+        text = ns.payload["text"]
 
         cuLeaf = Leaf.createOrUpdateLeaf(mapId, path, text)
 

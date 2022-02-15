@@ -56,10 +56,41 @@ root/
 $ ./bin/run.sh
 ```
 
+
+## Development
+
+The first three steps are automagically done the first time you run the
+`./bin/run.sh` script.
+
+1. Create a venv
+```bash
+$ python -m venv venv
+```
+
+2. Install the packages in `requirements.txt`
+```bash
+$ pip install -r requirements.txt
+```
+
+3. Set the `FLASK_APP` environment variable
+```bash
+$ export FLASK_APP=index.py
+```
+
+4. PROFIT
+
+
 ## Testing
 
-Make sure you have the `FLASK_APP=index.py` environment variable set.
+First, make sure the first three steps of the (Development)[development] section
+have been followed.
 
+To run all tests
 ```bash
 $ flask test
+```
+
+To run a specific test
+```bash
+$ flask test tests.testLeafApi
 ```

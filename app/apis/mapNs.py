@@ -1,5 +1,5 @@
 from flask import request
-from flask_restx import Namespace, Resource, fields
+from flask_restx import Namespace, Resource, fields, marshal
 from app.models.schemas import MindMapSchema, LeafSchema
 from app.models.mindmap import MindMap
 from app.models.leaf import Leaf
@@ -70,7 +70,7 @@ class LeafListResource(Resource):
                 foundLeaf = Leaf.findByMapAndPath(mapId, path)
 
                 if foundLeaf != None:
-                    return leafSchema.dump(foundLeaf), 200
+                    return marshal(foundLeaf, leaf), 200
                 else:
                     return { "message": "Leaf not found" }, 404
             else:
